@@ -9,6 +9,7 @@ extern ssize_t ft_write(int fd, const void *buf, size_t count);
 extern ssize_t ft_read(int fd, void *buf, size_t count);
 extern char *ft_strcpy(char *dst, const char *src);
 extern char *ft_strdup(const char *str);
+extern int ft_strcmp(const char *s1, const char *s2);
 
 int main(void)
 {
@@ -47,6 +48,15 @@ int main(void)
 		read_bytes += read;
 	}
 	printf("Read %ld bytes total\n", read_bytes);
+	printf("---------------------------\n");
+	printf("ft_strcmp\n");
+	printf("strcmp result: %d\n", ft_strcmp(str, str));
+	char *str1 = "Hello, assembly!";
+	printf("strcmp result: %d\n", ft_strcmp(str, str1));
+	char *str2 = "Hello, c!";
+	printf("strcmp result: %d\n", ft_strcmp(str1, str2));
+	char *str3 = "Hello, a!";
+	printf("strcmp result: %d\n", ft_strcmp(str2, str3));
 	printf("---------------------------\n");
 	return 0;
 }
