@@ -1,10 +1,10 @@
 section .text   ; declare the code segment
 
-global _ft_strdup ; declare the function ft_strdup as global (exportable to other modules)
+global ft_strdup ; declare the function ft_strdup as global (exportable to other modules)
 
-extern _malloc ; malloc is an external function (to allocate memory)
+extern malloc ; malloc is an external function (to allocate memory)
 
-_ft_strdup:
+ft_strdup:
 	cmp rdi, 0 ; !rdi (if str is NULL)
 	jz error ; go to error
 
@@ -23,7 +23,7 @@ malloc_start:
 	inc rcx ; rcx++ (increment length)
 	push rdi ; save src
 	mov rdi, rcx ; rdi = length  --- check the length of the string
-	call _malloc ; allocate memory
+	call malloc ; allocate memory
 	pop rdi ; restore src
 	cmp rax, 0 ; if (!rax)
 	jz error ; go to error jz == jump if zero

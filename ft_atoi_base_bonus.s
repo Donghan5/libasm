@@ -1,8 +1,8 @@
 section .text
 
-global _ft_atoi_base
+global ft_atoi_base
 
-_ft_atoi_base: ; rdi = *str(to convert), rsi = *base(2 to 16)
+ft_atoi_base: ; rdi = *str(to convert), rsi = *base(2 to 16)
 	push rbx     ; save rbx (sign)
 	push r12     ; save r12 (base_length)
 	xor rax, rax ; rax = 0 (result)
@@ -91,7 +91,7 @@ atoi_increment:
 
 atoi_loop:
 	cmp BYTE [rdi + r8], 0      ; str[i] == 0
-	je set_rax
+	je conversion_finished
 	xor r9, r9
 	jmp atoi_idx
 
@@ -101,7 +101,7 @@ atoi_idx_inc:
 atoi_idx:
 	mov r10b, BYTE [rsi + r9]
 	cmp r10b, 0
-	je set_rax
+	je conversion_finished
 	cmp BYTE [rdi + r8], r10b    ; base[j] == str[i]
 	jne atoi_idx_inc
 

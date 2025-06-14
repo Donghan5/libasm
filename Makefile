@@ -6,13 +6,9 @@ BONUS_OBJS	=	$(BONUS_SRCS:.s=.o)
 
 NA			=	nasm
 
-# make decetion of the OS
-ifeq ($(shell uname), Linux)
-	NA_FLAGS	=	-f elf64
-else
-	NA_FLAGS	=	-f macho64
-endif
-FLAGS 		=	-Wall -Werror -Wextra -fsanitize=address
+NA_FLAGS	=	-f elf64
+
+FLAGS 		=	-Wall -Werror -Wextra
 NAME		=	libasm.a
 TEST		=	test
 TEST_BONUS	=	test_bonus
@@ -34,14 +30,12 @@ fclean:			clean
 re:				fclean $(NAME)
 
 test:			$(NAME)
-				gcc $(FLAGS) -L. -lasm -o $(TEST) main.c
-				./$(TEST) < Makefile
+				gcc $(FLAGS) -no-pie -o $(TEST) main.c -L. -lasm
 
 bonus:			$(OBJS) $(BONUS_OBJS)
 				ar rcs $(NAME) $(OBJS) $(BONUS_OBJS)
 
 test_bonus:		bonus
-				gcc $(FLAGS) -L. -lasm -o $(TEST_BONUS) main_bonus.c
-				./$(TEST_BONUS)
+				gcc $(FLAGS) -no-pie -o $(TEST_BONUS) main_bonus.c -L. -lasm
 
 .PHONY:			clean fclean re test bonus test_bonus

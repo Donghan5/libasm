@@ -1,7 +1,7 @@
 section .text         ; declare the code segment
-global _ft_strlen      ; declare the function ft_strlen as global
+global ft_strlen      ; declare the function ft_strlen as global
 
-_ft_strlen:            ; start of the func
+ft_strlen:            ; start of the func
                       ; rdi register holds the pointer to the string
     xor rax, rax      ; rax init to 0 (length counter)
 

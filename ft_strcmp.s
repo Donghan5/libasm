@@ -1,10 +1,10 @@
 section .text
 
-global _ft_strcmp
+global ft_strcmp
 
 ; delete RDX, RCX, RAX (it means that these registers will be modified)
 
-_ft_strcmp:       ; s1 = rdi, s2 = rsi
+ft_strcmp:       ; s1 = rdi, s2 = rsi
 	xor rcx, rcx  ; rcx = 0 (index)
 	xor rdx, rdx  ; rdx = 0 (result)
 	cmp rdi, 0

@@ -1,7 +1,8 @@
 section .text
-global _ft_strcpy
 
-_ft_strcpy:  ; rdi (Register destination index (in 64 bit)) = dst
+global ft_strcpy
+
+ft_strcpy:  ; rdi (Register destination index (in 64 bit)) = dst
 			 ; rdi is the register that already set by the caller
 			 ;rsi (Register source index (in 64 bit)) = src
 	xor rcx, rcx ; rcx = 0 (index)

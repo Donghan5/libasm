@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 // declare the functions (custom assembly functions)
 extern size_t ft_strlen(const char *str);
@@ -39,12 +40,17 @@ int main(void)
 	free(dup);
 	printf("---------------------------\n");
 	printf("ft_read (reading Makefile)\n");
-	read = ft_read(STDIN_FILENO, buffer, 100);
+	int fd = open("Makefile", O_RDONLY);
+ 	if (fd < 0) {
+		perror("Error opening Makefile");
+		return 1;
+ 	}
+	read = ft_read(fd, buffer, 100);
 	while (read > 0)
 	{
 		buffer[read] = '\0';
 		printf("Content read: %s", buffer);
-		read = ft_read(STDIN_FILENO, buffer, 100);
+		read = ft_read(fd, buffer, 100);
 		read_bytes += read;
 	}
 	printf("Read %ld bytes total\n", read_bytes);
