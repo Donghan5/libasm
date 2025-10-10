@@ -4,90 +4,65 @@ global ft_list_remove_if
 
 extern free
 
-; void ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(), void (*free_fct)(void *));
-; rdi: begin_list, rsi: data_ref, rdx: cmp, rcx: free_fct
+; rdi: begin_list (t_list **), rsi: data_ref, rdx: cmp(), rcx: free_fct()
 ft_list_remove_if:
-    ; --- Function Prologue: Save callee-saved registers that will be used ---
-    push rbx                ; Save rbx, will be used for the 'prev' pointer.
-    push r12                ; Save r12, will be used to temporarily store 'current->next'.
-    push r13                ; call-saved register
-    sub rsp, 8              ; Align stack to 16 byte boundary
+    push    rbx                     ; Callee-saved register
+    push    r12
+    push    r13
+    push    r14
+    push    r15
 
-    ; --- Initialization ---
-    mov r13, rdi
-    cmp  rdi, 0             ; Check if begin_list is NULL.
-    jz   end_function       ; If so, there's nothing to do.
-    mov  rax, [rdi]         ; rax = *begin_list. Use rax as the 'current' pointer.
-    xor  rbx, rbx           ; rbx = 0. Initialize the 'prev' pointer to NULL.
+    mov     r12, rdi                ; r12 = begin_list
+    mov     r13, rsi                ; r13 = data_ref
+    mov     r14, rdx                ; r14 = cmp function pointer
+    mov     r15, rcx                ; r15 = free_fct function pointer
 
-loop_start:
-    cmp  rax, 0             ; Check if current == NULL.
-    jz   end_function       ; If it is, we've reached the end of the list.
+    cmp     r12, 0
+    je      .end_function           ; if begin_lst == NULL
+    mov     rbx, [r12]              ; rbx = current_node (*begin_list)
+    mov     rax, 0                  ; rax = previous_node, init to NULL
 
-    ; --- Prepare for the 'cmp' function call ---
-    ; Save registers that might be modified by the function call (caller-saved).
-    push rax
-    push rbx
-    push rdi
-    push rsi
-    push rdx                ; cmp
-    push rcx                ; free_fct
+.loop_start:
+    cmp     rbx, 0
+    je      .end_function           ; if current == NULL 
 
-    mov  r8, rdx            ; ← cmp 함수 포인터를 r8에 백업
-    mov  rdi, [rax + 8]
-    call r8                 ; ← rdx 대신 r8 호출!
+    mov     rdi, [rbx]              ; arg1 = current->data
+    mov     rsi, r13                ; arg2 = data_ref (use saved value)
+    call    r14                     ; cmp(current->data, data_ref)
 
-    pop  rcx
-    pop  rdxmake 
-    pop  rsi
-    pop  rdi
-    pop  rbx
-    pop  rax
+    test    eax, eax                ; if cmp result == 0
+    jne     .move_to_next           ; if != 0
 
-    ; --- Check the result from the cmp function ---
-    cmp  eax, 0             ; Is the return value (in eax) equal to 0?
-    jne  move_to_next       ; If not equal (Jump if Not Equal), skip deletion and move to the next node.
+    mov     rdi, [rbx]              ; rdi = current->data
+    call    r15                     ; free_fct(current->data)
 
-delete_node:
-    mov  r12, [rax]         ; r12 = current->next. Save the next node's address before freeing the current one.
+    mov     rdi, rbx                ; rdi = current node
+    mov     rdx, [rbx + 8]          ; rdx = current->next (store)
+    call    free                    ; free(current)
 
-    ; --- Check if prev is NULL (are we deleting the first node?) ---
-    cmp  rbx, 0
-    jne  delete_middle_node ; If prev is not NULL, jump to the logic for deleting a middle/end node.
+    cmp     rax, 0                  ; if previous_node == NULL (head node?)
+    jne     .link_prev_to_next
 
-delete_first_node:
-    mov  [r13], r12         ; *begin_list = current->next. Update the head of the list.
-    jmp  free_memory        ; Jump to the common memory free section.
+    ; head node
+    mov     [r12], rdx              ; *begin_list = current->next
+    mov     rbx, rdx                ; current = current->next
+    jmp     .loop_start
 
-delete_middle_node:
-    mov  [rbx], r12         ; prev->next = current->next. Bypass the current node.
+.link_prev_to_next:
+    ; middle or last node
+    mov     [rax + 8], rdx          ; prev->next = current->next
+    mov     rbx, rdx                ; current = current->next
+    jmp     .loop_start
 
-free_memory:
-    push rax
-    push r12
-    push rbx                
-    mov  rdi, [rax + 8]
-    call rcx
-    pop  rbx
-    pop  r12
-    pop  rax
+.move_to_next:
+    mov     rax, rbx                ; prev = current
+    mov     rbx, [rbx + 8]          ; current = current->next
+    jmp     .loop_start
 
-    push rbx                
-    mov  rdi, rax
-    call free
-    pop  rbx                
-
-    mov  rax, r12
-    jmp  loop_start         ; Go back to the start of the loop. 'prev' remains unchanged.
-
-move_to_next:
-    mov  rbx, rax           ; prev = current.
-    mov  rax, [rax]         ; current = current->next.
-    jmp  loop_start         ; Go back to the start of the loop.
-
-end_function:
-    add rsp, 8
-    pop r13
-    pop  r12                ; Restore the callee-saved registers from the stack.
-    pop  rbx
+.end_function:
+    pop     r15                     ; Restore Callee-saved register
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     rbx
     ret

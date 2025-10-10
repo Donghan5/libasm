@@ -2,64 +2,66 @@ section .text
 
 global ft_list_sort
 
-; void ft_list_sort(t_list **begin_list, int (*cmp)());
+; void ft_list_sort(t_list **begin_list, int (*cmp)(void*, void*));
+; rdi: begin_list, rsi: cmp function
 ft_list_sort:
-    push rbx    ; current element
-    push r12    ; original address of list (first element)
-    cmp rdi, 0  ; if begin_list == NULL (null check)
-    jz restore  ; shut down program (if begin_list is NULL)
-    mov r12, [rdi] ; r12 = (*begin_list)
-    cmp rsi, 0 ; if ((*cmp)() == NULL)
-    jz return
-    jmp compare_main
+    cmp     rdi, 0              ; Check if begin_list is NULL
+    je      .end
+    mov     r12, [rdi]          ; r12 = *begin_list (the head of the list)
+    cmp     r12, 0              ; Check if list is empty
+    je      .end
+    cmp     rsi, 0              ; Check if cmp function is NULL
+    je      .end
 
-; ------ outer loop ------
-increment_main:
-    mov rcx, [rdi] ; rcx = (*begin)
-    mov rbx, [rcx] ; rbx = rcx->next
-    mov [rdi], rbx  ; *begin = rbx
+.outer_loop_start:
+    mov     r13, 0              ; r13 = swapped flag. Set to 0 (false) at the start of each pass.
+    mov     r8, r12             ; r8 = current_node. Always start the pass from the head.
 
-compare_main:
-    cmp QWORD [rdi], 0  ; checking *begin == NULL (arrive at last element)
-    jz return
-    mov rcx, [rdi]
-    mov rbx, [rcx]
+.inner_loop:
+    cmp     r8, 0               ; Make sure current node is not null
+    je      .check_swapped
+    mov     r9, [r8 + 8]        ; r9 = next_node
+    cmp     r9, 0
+    je      .check_swapped      ; Reached the end of the list for this pass.
 
-; ------ inner loop ------
-compare_single:
-    cmp rbx, 0  ; current == NULL
-    jz increment_main ; compare action is complete, move to outer loop
+    ; --- Save registers before calling external function ---
+    push    rdi
+    push    rsi
+    push    r8
+    push    r9
+    push    r12
+    push    r13
 
-compare:
-    push rdi
-    push rsi
-    mov rax, rsi    ; register the address of cmp function
-    mov rcx, [rdi]  ; rcx = *begin
-    mov rdi, [rcx + 8]  ; rdi = rcx->data (+8 to take a data)
-    mov rsi, [rbx + 8]  ; rsi = rbx->data
-    call rax        ; cmp(rdi, rsi)
-    pop rsi
-    pop rdi
-    cmp rax, 0      ; checking return value of cmp > 0
-    jg swap
+    ; --- Prepare arguments for cmp and call it ---
+    mov     rdi, [r8]           ; arg1 = current_node->data
+    mov     rsi, [r9]           ; arg2 = next_node->data
+    call    QWORD [rsp + 32]    ; Call original cmp function address (it's on the stack)
 
-increment_single:
-    mov rcx, [rbx]
-    mov rbx, rcx    ; current = current->next
-    jmp compare_single
+    ; --- Restore registers ---
+    pop     r13
+    pop     r12
+    pop     r9
+    pop     r8
+    pop     rsi
+    pop     rdi
 
-swap:
-    mov r8, [rdi]   ; r8 = (*begin)
-    mov rcx, [r8 + 8]   ; rcx = r8->data
-    mov rax, [rbx + 8]  ; rax = rbx->data (current node)
-    mov [r8 + 8], rax   
-    mov [rbx + 8], rcx
-    jmp increment_single
+    cmp     eax, 0              ; Check the return value of cmp()
+    jle     .no_swap            ; If data is already in order (<= 0), skip the swap.
 
-return:
-    mov [rdi], r12  ; *begin = first (init begin pointer)
+    ; --- Swap the data pointers ---
+    mov     r10, [r8]
+    mov     r11, [r9]
+    mov     [r8], r11
+    mov     [r9], r10
+    mov     r13, 1              ; A swap was made, so set swapped flag to 1 (true).
 
-restore:
-    pop r12
-    pop rbx
-    ret
+.no_swap:
+    mov     r8, [r8 + 8]        ; Move to the next node: current_node = current_node->next
+    jmp     .inner_loop
+
+.check_swapped:
+    cmp     r13, 1              ; Was anything swapped in this entire pass?
+    je      .outer_loop_start   ; If yes (flag is 1), the list is not yet sorted. Start another pass.
+
+.end:
+    ret                         ; If no swaps were made (flag is 0), the list is sorted. Return.

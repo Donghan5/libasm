@@ -1,7 +1,23 @@
-section .text  ; declare the code segment --> indicate that this is the code section
-global ft_write  ; declare the function ft_write as global (exportable to other modules)
+section .text
 
-ft_write:   	  ; start of the function
-	mov rax, 1 ; syscall number for sys_write 0x2000004 is for 64-bit (macOS), Linux uses different (use 1)
-	syscall  	   ; invoke syscall
-	ret     ; return
+global ft_write
+
+extern __errno_location
+
+ft_write:
+	cmp rsi, 0		; check if buf is NULL
+	je .error
+	
+    mov rax, 1      ; syscall number for sys_write
+    syscall
+    cmp rax, 0      ; Check if the return value is negative
+    jl  .error      ; If it is, jump to the error handling part
+    ret
+
+.error:
+    neg rax                     ; Negate rax to get the positive errno value
+    mov rdi, rax                ; Move the errno value to rdi
+    call __errno_location wrt ..plt ; Get the address of errno
+    mov [rax], rdi              ; Set errno
+    mov rax, -1                 ; Set the return value to -1
+    ret

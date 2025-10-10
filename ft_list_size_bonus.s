@@ -12,8 +12,8 @@ ft_list_size:
     jmp loop_start        ; Start the loop
 
 increment_and_next:
-    inc rax               ; length++
-    mov rdi, [rdi]        ; rdi = rdi->next (Move to the next node)
+    inc rax                   ; length++
+    mov rdi, [rdi + 8]        ; rdi = rdi->next (Move to the next node)
 
 loop_start:
     cmp rdi, 0            ; while (rdi != NULL)
