@@ -23,7 +23,7 @@ malloc_start:
 	inc rcx ; rcx++ (increment length)
 	push rdi ; save src
 	mov rdi, rcx ; rdi = length  --- check the length of the string
-	call malloc ; allocate memory
+	call malloc wrt ..plt ; allocate memory
 	pop rdi ; restore src
 	cmp rax, 0 ; if (!rax)
 	jz error ; go to error jz == jump if zero

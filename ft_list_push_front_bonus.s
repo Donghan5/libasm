@@ -9,7 +9,7 @@ ft_list_push_front:
     push    rsi
 
     mov     rdi, 16         ; sizeof(t_list)
-    call    malloc
+    call    malloc wrt ..plt
     test    rax, rax
     jz      .end
 

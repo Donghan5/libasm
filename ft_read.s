@@ -15,7 +15,7 @@ ft_read:
 .error:
 	neg rax								; negate rax to get the positive errno
 	mov rdi, rax						; move errno val to rdi
-	call __errno_location wrt ..plt	; get the address of errno
+	call __errno_location wrt ..plt		; get the address of errno
 	mov [rax], rdi						; setting errno
 	mov rax, -1							; set return value to -1
 	ret
