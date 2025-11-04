@@ -2,6 +2,14 @@ section .text
 
 global ft_strcpy
 
+; -------------------------------------------------
+; - Register usage:
+; 	rdi = dst (destination string)
+; 	rsi = src (source string)
+; 	rax = return value (dst)
+; 	rcx = index (for iterating through the strings)
+; 	rdx = temp (to hold character values during copy)
+; -------------------------------------------------
 ft_strcpy:  ; rdi (Register destination index (in 64 bit)) = dst
 			 ; rdi is the register that already set by the caller
 			 ;rsi (Register source index (in 64 bit)) = src

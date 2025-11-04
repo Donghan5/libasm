@@ -4,6 +4,14 @@ global ft_strcmp
 
 ; delete RDX, RCX, RAX (it means that these registers will be modified)
 
+; ------------------------------------------------
+; - Register usage:
+; 	rdi = s1 (first string)
+; 	rsi = s2 (second string)
+; 	rax = return value (comparison result)
+; 	rcx = index (for iterating through the strings)
+; 	rdx = temp (to hold character values during comparison)
+; ------------------------------------------------
 ft_strcmp:       ; s1 = rdi, s2 = rsi
 	xor rcx, rcx  ; rcx = 0 (index)
 	xor rdx, rdx  ; rdx = 0 (result)

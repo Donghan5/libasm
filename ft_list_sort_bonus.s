@@ -2,8 +2,12 @@ section .text
 
 global ft_list_sort
 
+; ------------------------------------------------
 ; void ft_list_sort(t_list **begin_list, int (*cmp)(void*, void*));
-; rdi: begin_list, rsi: cmp function
+; - Register usage:
+; 	rdi = t_list **begin_list (first argument)
+; 	rsi = int (*cmp)(void*, void*) (second argument)
+; ------------------------------------------------
 ft_list_sort:
     cmp     rdi, 0              ; Check if begin_list is NULL
     je      .end
@@ -13,10 +17,12 @@ ft_list_sort:
     cmp     rsi, 0              ; Check if cmp function is NULL
     je      .end
 
+; ---- Outer loop: bubble sort to swap the value ----
 .outer_loop_start:
     mov     r13, 0              ; r13 = swapped flag. Set to 0 (false) at the start of each pass.
     mov     r8, r12             ; r8 = current_node. Always start the pass from the head.
 
+; ---- Inner loop: traverse the list ----
 .inner_loop:
     cmp     r8, 0               ; Make sure current node is not null
     je      .check_swapped
@@ -45,7 +51,7 @@ ft_list_sort:
     pop     rsi
     pop     rdi
 
-    cmp     eax, 0              ; Check the return value of cmp()
+    cmp     eax, 0              ; Check the return value of cmp() / eax is the result of cmp (returned value)
     jle     .no_swap            ; If data is already in order (<= 0), skip the swap.
 
     ; --- Swap the data pointers ---

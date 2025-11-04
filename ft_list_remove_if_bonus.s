@@ -4,7 +4,13 @@ global ft_list_remove_if
 
 extern free
 
-; rdi: begin_list (t_list **), rsi: data_ref, rdx: cmp(), rcx: free_fct()
+; ------------------------------------------------
+;- Register usage:
+; rdi: begin_list (t_list **)
+; rsi: data_ref
+; rdx: cmp()
+; rcx: free_fct()
+; ------------------------------------------------
 ft_list_remove_if:
     ; --- Prologue: Save callee-saved registers and align stack ---
     push    rbp                     ; Save Base Pointer

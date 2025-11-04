@@ -130,7 +130,7 @@ These registers have historical significance from earlier 16-bit and 32-bit arch
 * **`RDX`**: **Data Register**. Used in conjunction with `RAX` for `MUL`/`DIV` operations (e.g., storing the divisor or part of the result/remainder). In System V ABI, it's used to pass the 3rd integer argument to functions.
 * **`RSP`**: **Stack Pointer**. Points to the top of the current stack. It's modified by instructions like `PUSH`, `POP`, `CALL`, and `RET`.
 * **`RBP`**: **Base Pointer**. Often used to point to the base of the current function's stack frame, allowing stable access to local variables and parameters. In System V ABI, it's a **callee-saved** register.
-
+* **`EAX`**: **Accumulator Register** (as explained, eax is the lower part of rax)
 *(Note: `RSI` (Source Index) and `RDI` (Destination Index) are also traditional registers, often used for string operations and as the 2nd and 1st function arguments respectively in System V ABI.)*
 
 #### Additional explain
@@ -148,6 +148,45 @@ These are additional general-purpose registers introduced with the x86-64 archit
 * **`R8`, `R9`**: Used to pass the 5th and 6th integer arguments to functions (in System V ABI).
 * **`R10`, `R11`**: Typically used as temporary registers (**caller-saved**). `R10` can sometimes be used for passing a static chain pointer for nested functions.
 * **`R12`, `R13`, `R14`, `R15`**: These are **callee-saved** registers. Functions that use them must preserve their original values.
+## QWORD
+
+- Meaning: QWORD (quadword) = 8 bytes = 64 bits. On x86-64 a QWORD is the natural size for general-purpose registers and pointers.
+- Use: Use QWORD when you want to load/store 64-bit values (integers, pointers, or 8-byte data fields). In assembly you normally write `QWORD PTR [mem]` to disambiguate the memory operand size when it cannot be inferred.
+- Syntax examples:
+    ```assembly
+    ; load a 64-bit value from memory into rax
+    mov rax, QWORD PTR [rbp-8]
+
+    ; store rax (64-bit) into memory
+    mov QWORD PTR [rbp-8], rax
+    ```
+- Data directives:
+    - NASM: `dq` declares a 64-bit value in the data section.
+      ```assembly
+      section .data
+      my_val: dq 0x1122334455667788
+      ```
+    - GAS/AT&T: use `.quad` (or in Intel mode `.quad` as well).
+- Sign/zero extension and operand-size rules:
+    - Writing to a 32-bit register (e.g., `eax`) zero-extends into the full 64-bit register (`rax`), clearing the high 32 bits.
+    - Writing to 8- or 16-bit registers does NOT change the high bits of the full 64-bit register; use explicit sign/zero extension if needed (`movsx`, `movzx`, or an explicit move into a 32-bit register).
+- Endianness: x86-64 is little-endian — the least-significant byte of a QWORD is stored at the lowest address.
+- Alignment and performance: QWORD accesses are fastest when naturally aligned to 8-byte boundaries; unaligned accesses are allowed but may be slower and can cross cache lines.
+- Common use case: pointers and return values — on 64-bit systems pointers and most integer return values are 64-bit, so QWORD is the appropriate size.
+- Note on assemblers: some assemblers will infer QWORD from the destination register (e.g., `mov rax, [label]`), but using `QWORD PTR` is explicit and portable across syntaxes.
+
+Examples combining data and code:
+```assembly
+section .data
+ptr: dq message
+
+section .text
+mov rax, QWORD PTR [ptr]   ; load 64-bit address stored at ptr
+mov rdi, rax               ; pass pointer as first argument (System V ABI)
+...
+section .data
+message: db 'hello', 0
+```
 
 ## Data Types and Sizes
 
@@ -158,11 +197,13 @@ When accessing memory, you often need to specify the size of the data being acce
 * `DWORD PTR`: 4 bytes (Double Word)
 * `QWORD PTR`: 8 bytes (Quad Word)
 
-Example:
-```assembly
-mov BYTE PTR [my_variable], 5  ; Move the byte value 5 into my_variable
-mov QWORD PTR [rax], rbx       ; Move the 8-byte value from rbx into memory at address rax
+* Example:
+    ```assembly
+    mov BYTE PTR [my_variable], 5  ; Move the byte value 5 into my_variable
+    mov QWORD PTR [rax], rbx       ; Move the 8-byte value from rbx into memory at address rax
+    ```
 
 ### Free in assembly
     - Different with free in C
     - It is possible overwrite it (we don't need anymore) --> connect with `Caller-Saved` / `Volatile`
+

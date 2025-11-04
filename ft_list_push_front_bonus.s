@@ -3,16 +3,19 @@ section .text
 global ft_list_push_front
 
 extern malloc
-
-ft_list_push_front: ; rdi: t_list **begin_list
-                     ; rsi: void *data
-                     ; returns: void
+; ------------------------------------------------
+;- Register usage:
+; 	rdi = t_list **begin_list
+; 	rsi = void *data
+; 	rax = return value (new node or NULL)
+; ------------------------------------------------
+ft_list_push_front:
     push    rdi
     push    rsi
 
     mov     rdi, 16         ; sizeof(t_list)
-    call    malloc wrt ..plt
-    test    rax, rax
+    call    malloc wrt ..plt ; allocate new node
+    test    rax, rax    ; check if malloc succeeded (purpose: NULL check)
     jz      .end
 
     pop     rsi             ; data
