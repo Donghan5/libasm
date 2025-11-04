@@ -2,7 +2,36 @@
 
 This document provides a basic overview of x86-64 assembly language using Intel syntax. It covers fundamental syntax, registers, common instructions, memory addressing, and control flow. This is often relevant for projects like `libasm` or for understanding low-level programming.
 
+General Instruction Format (four parts):
+
+1. Label (optional): A symbolic name followed by a colon that marks a code or data address. Labels are used as targets for jumps/calls or to name data locations.
+2. Mnemonic (required): The instruction name (e.g., MOV, ADD, SUB, MUL, INC, DEC) that specifies the operation to perform.
+3. Operand(s) (usually required): One to three operands that provide the data or locations the instruction operates on (registers, memory, immediates).
+4. Comment (optional): Explanatory text starting with a semicolon (`;`) in Intel syntax. Comments describe intent or clarify tricky code.
+
+Typical syntax: Label: Mnemonic Operand(s) ; Comment
+
 ## Basic Syntax
+
+Operand order and meaning (destination, source)
+
+In Intel syntax most two-operand instructions use the order: destination, source. The destination is the location that will be written with the result of the operation; the source is the value or operand used to compute that result. Operands can be registers, memory references, or immediates (constants), but there are important rules:
+
+- The destination is typically written first: `mnemonic dest, src`.
+- Immediates (e.g. `10`, `0xFF`) can only be a source — they cannot be a destination.
+- A memory-to-memory operation is generally not allowed in a single instruction (e.g., `mov [a], [b]` is invalid); one operand must be a register for such transfers or you must use two instructions.
+- Operand sizes must match (byte/word/dword/qword). If necessary the assembler uses size directives (e.g., `BYTE PTR`, `QWORD PTR`) or the register size to disambiguate.
+- Some instructions have special operand constraints (for example, `mul`/`div` implicitly use `rax`/`rdx`). Check the instruction reference when in doubt.
+
+Examples:
+```assembly
+mov rax, rbx       ; rax (dest) := rbx (src)
+mov rax, 10        ; rax (dest) := immediate 10
+mov [rbp-8], rax   ; memory (dest) := rax (src)
+mov rax, [rbp-8]   ; rax (dest) := memory (src)
+add rax, 5         ; rax := rax + 5 (dest is rax)
+; invalid: mov [a], [b]  ; memory-to-memory not allowed in one mov
+```
 
 Intel syntax for x86-64 assembly generally follows the `mnemonic destination, source` pattern for instructions.
 
@@ -24,6 +53,31 @@ Intel syntax for x86-64 assembly generally follows the `mnemonic destination, so
                 jnz start_loop ; Jump to start_loop if rcx is not zero
             ret
             ```
+
+## Conditional Jumps: `jne` and `jz`
+
+Conditional jumps change control flow based on the processor's FLAGS register, which is affected by prior arithmetic or comparison instructions (commonly `cmp` or `test`). Two frequently used conditional jumps are `jne` and `jz`:
+
+- `jne` (Jump if Not Equal): Also written as `jnz` (Jump if Not Zero). The jump is taken when the Zero Flag (ZF) is clear (ZF = 0). Typically used after `cmp` when the compared values are not equal.
+    ```assembly
+    cmp rax, rbx    ; set flags based on rax - rbx
+    jne not_equal   ; jump if rax != rbx (ZF == 0)
+    ; fall-through: rax == rbx
+    ```
+
+- `jz` (Jump if Zero): Also written as `je` (Jump if Equal). The jump is taken when the Zero Flag (ZF) is set (ZF = 1). Typically used after `cmp` when the compared values are equal.
+    ```assembly
+    cmp rax, rbx    ; set flags based on rax - rbx
+    jz equal        ; jump if rax == rbx (ZF == 1)
+    ; fall-through: rax != rbx
+    ```
+
+Notes:
+
+- `cmp a, b` performs `a - b` to set FLAGS without storing the result. ZF becomes 1 when `a == b`.
+- `jne`/`jnz` and `jz`/`je` are complementary for equality checks after `cmp`.
+- Most assemblers accept both synonyms (`jne`/`jnz` and `jz`/`je`) for the same opcodes.
+
         * **Data Addressing**: Labels can define the starting address of data items or variables. The assembler replaces the label with the actual memory address where the data begins.
             ```assembly
             section .data
@@ -79,6 +133,14 @@ These registers have historical significance from earlier 16-bit and 32-bit arch
 
 *(Note: `RSI` (Source Index) and `RDI` (Destination Index) are also traditional registers, often used for string operations and as the 2nd and 1st function arguments respectively in System V ABI.)*
 
+#### Additional explain
+* **`rdi`**: **1st parameter**
+* **`rsi`**: **2nd parameter**
+* **`rdx`**: **3rd parameter**
+* **`rcx`**: **4th parameter**
+* **`r8`**: **5th parameter**
+* **`r9`**: **6th parameter**
+
 ### Recent Registers (R8-R15)
 
 These are additional general-purpose registers introduced with the x86-64 architecture.
@@ -100,3 +162,7 @@ Example:
 ```assembly
 mov BYTE PTR [my_variable], 5  ; Move the byte value 5 into my_variable
 mov QWORD PTR [rax], rbx       ; Move the 8-byte value from rbx into memory at address rax
+
+### Free in assembly
+    - Different with free in C
+    - It is possible overwrite it (we don't need anymore) --> connect with `Caller-Saved` / `Volatile`

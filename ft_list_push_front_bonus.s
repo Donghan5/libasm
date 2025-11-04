@@ -4,7 +4,9 @@ global ft_list_push_front
 
 extern malloc
 
-ft_list_push_front:
+ft_list_push_front: ; rdi: t_list **begin_list
+                     ; rsi: void *data
+                     ; returns: void
     push    rdi
     push    rsi
 
