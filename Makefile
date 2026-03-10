@@ -30,12 +30,12 @@ fclean:			clean
 re:				fclean $(NAME)
 
 test:			$(NAME)
-				gcc $(FLAGS) -no-pie -o $(TEST) main.c -L. -lasm
+				gcc $(FLAGS) -o $(TEST) main.c -L. -lasm
 
 bonus:			$(OBJS) $(BONUS_OBJS)
 				ar rcs $(NAME) $(OBJS) $(BONUS_OBJS)
 
 test_bonus:		bonus
-				gcc $(FLAGS) -no-pie -o $(TEST_BONUS) main_bonus.c -L. -lasm
+				gcc $(FLAGS) -o $(TEST_BONUS) main_bonus.c -L. -lasm
 
 .PHONY:			clean fclean re test bonus test_bonus

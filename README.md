@@ -188,6 +188,10 @@ section .data
 message: db 'hello', 0
 ```
 
+## Errno
+* `__errno_location`: Return memory address of errno in this thread
+
+
 ## Data Types and Sizes
 
 When accessing memory, you often need to specify the size of the data being accessed. Common size directives in Intel syntax include:

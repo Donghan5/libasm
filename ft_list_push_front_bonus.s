@@ -17,14 +17,14 @@ ft_list_push_front:
     call    malloc wrt ..plt ; allocate new node
     test    rax, rax    ; check if malloc succeeded (purpose: NULL check)
     jz      .end
-
-    pop     rsi             ; data
-    pop     rdi             ; begin_list
-
+    pop     rsi
+    pop     rdi
     mov     [rax], rsi      ; new_node->data = data
     mov     rcx, [rdi]
     mov     [rax + 8], rcx  ; new_node->next = *begin_list
     mov     [rdi], rax      ; *begin_list = new_node
-
+    ret                     ; Sucess, just return
 .end:
+    pop rsi
+    pop rdi ; Clear the buffer in stack (popped)
     ret

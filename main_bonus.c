@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct      s_list
-{
-    struct s_list   *next;
-    void            *data;
-}                   t_list;
+typedef struct s_list {
+    void *data;
+    struct s_list *next;
+}          t_list;
 
 extern int ft_atoi_base(const char *str, const char *base_str);
 extern int ft_list_push_front(void **begin_list, void *data);
